@@ -1,0 +1,35 @@
+[MASTER]
+# Allow CamelCase module names (e.g., ADBLibrary)
+module-rgx=(([A-Z][a-z]+)+|[a-z_][a-z0-9_]{2,30})
+
+[MESSAGES CONTROL]
+# Disable warnings you want to ignore completely
+disable=
+    C0103,  # Invalid name (e.g., module not in snake_case)
+    R0913,  # Too many arguments
+    R0904,  # Too many public methods
+    E0633
+
+[FORMAT]
+# Optional: Customize max line length
+max-line-length=120
+
+[DESIGN]
+# Increase max arguments allowed in functions
+max-args=6
+
+# Increase number of allowed public methods in a class
+max-public-methods=25
+
+[REPORTS]
+# Turn off pylint report footer
+reports=no
+
+[TYPECHECK]
+# Optional: If using dynamic or Robot Framework libraries, you can relax these
+ignored-modules=robot
+ignored-classes=Library
+
+[EXCEPTIONS]
+# Always re-raise caught exceptions using 'from'
+overgeneral-exceptions=Exception
