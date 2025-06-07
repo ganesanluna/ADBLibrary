@@ -1,0 +1,2 @@
+robotframework
+git+https://github.com/ganesanluna/ADBLibrary.git@main#egg=ADBLibrary
