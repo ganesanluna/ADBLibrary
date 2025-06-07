@@ -67,7 +67,7 @@ SETUP
 
 Refer to the following setup diagram to connect your Android device and verify ADB:
 
-[Image: doc/images/IMAGE1.png]
+![Setup](doc/IMAGE1.png)
 
 -------------------------------------------------------------------------------
 
