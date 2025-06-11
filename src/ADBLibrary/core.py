@@ -920,3 +920,33 @@ class ADBLibrary:
             raise RuntimeError(f"Command execution failed, Error: {err}")
         
         return output
+
+    @classmethod
+    @keyword("Get Hardware Name")
+    def get_hardware_name(cls, device_id:Optional[str]=None) -> str:
+        """
+        Retrieve the hardware name
+
+        ``Args:``
+            - ``device_id(str):`` Specified a given adb device id.
+        
+        ``Returns:``
+            - ``Return(str)``: return the adb device hardware name.
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+        
+        Example:
+        | ${stdout} | Get Hardware Name |   # ${stdout}=rpi4   |
+        | ${stdout} | Get Hardware Name | device_id=XXRZXXCT81F |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"getprop ro.hardware"
+        output, err = cls.execute_adb_shell_command(device_id=device_id,
+                                                    command=cmd,
+                                                    return_stdout=True,
+                                                    return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+        
+        return output
