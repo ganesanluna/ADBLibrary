@@ -681,9 +681,9 @@ class ADBLibrary:
             - RuntimeError``: If the reconnect command fails
 
         Example:
-        | Push File | file.txt | /storage/downloads/file.txt | # file |
+        | Push File | src=file.txt | dest=/storage/downloads/file.txt | # file |
         | Push File | device_id=XXRZXXCT81F | file.txt | /storage/downloads/file.txt |
-        | Push File | /tmp/file | /storage/downloads| # directory |
+        | Push File | src=/tmp/file | dest=/storage/downloads| # directory |
         | Push File | device_id=XXRZXXCT81F | /tmp/ | /storage/downloads |
 
         """
@@ -718,9 +718,9 @@ class ADBLibrary:
             - ``RuntimeError``: If the reconnect command fails
 
         Example:
-        | Pull File | /storage/downloads/file.txt | file.txt | # file |
+        | Pull File | src=/storage/downloads/file.txt | dest=file.txt | # file |
         | Pull File | device_id=XXRZXXCT81F | /storage/downloads/file.txt | file.txt |
-        | Pull File | /storage/downloads | /tmp/ | # directory |
+        | Pull File | src=/storage/downloads | dest=/tmp/ | # directory |
         | Pull File | device_id=XXRZXXCT81F | /storage/downloads | /tmp/ |
         """
         cls._ensure_device_connected(device_id)
@@ -753,6 +753,7 @@ class ADBLibrary:
         
         Example:
         | Set Root Access | # Set root |
+        | Set Root Access | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
 
@@ -781,6 +782,7 @@ class ADBLibrary:
         
         Example:
         | Set Unroot Access | # Set unroot |
+        | Set Unroot Access | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
         
@@ -794,3 +796,127 @@ class ADBLibrary:
                                       return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
+    
+    @classmethod
+    @keyword("Install Apk")
+    def install_apk(cls, device_id:Optional[str]=None, apk_file: str=""):
+        """
+        Installs the apk file from pc to given specified adb device.
+
+        ``Args:``
+            - ``device_id(str):`` Specified device id.
+            - ``apk_file(str):`` Specific apk file in pc
+        
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+
+        Example:
+        | Install Apk | apk_file=/home/user/Downloads/demo_calculator-1-0.apk |
+        | Install Apk | device_id=XXRZXXCT81F | apk_file=~/Downloads/demo_calculator-1-0.apk |
+        """
+        cls._ensure_device_connected(device_id)
+
+        if not os.path.exists(apk_file):
+            raise FileNotFoundError(f"Invalid filepath '{apk_file}'")
+
+        cmd = f"adb install {apk_file}"
+        err = cls.execute_adb_command(device_id=device_id,
+                                      command=cmd,
+                                      return_stdout=False,
+                                      return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+    
+    @classmethod
+    @keyword("Uninstall Apk")
+    def uninstall_apk(cls, device_id:Optional[str]=None, apk_package: str=""):
+        """
+        Uninstalls the specified APK package from the connected ADB device.
+
+        The APK package should be provided in the standard format, such as:
+        `com.android.calculator2`
+
+        If you're unsure about the package name, use the `Find Package` keyword to locate it.
+
+        ``Args``:
+            - ``device_id(str)``: The specific device ID to run the command on.
+            - ``apk_package(str)``: The package name of the APK to uninstall
+                (e.g., com.android.calculator2).
+        
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+
+        Example:
+        | Uninstall Apk | apk_package=com.android.calculator2 |
+        | UnInstall Apk | device_id=XXRZXXCT81F | apk_package=com.android.calculator2 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"adb uninstall {apk_package}"
+        err = cls.execute_adb_command(device_id=device_id,
+                                      command=cmd,
+                                      return_stdout=False,
+                                      return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}"
+                               f"{apk_package} package not remove/uninstall")
+    
+    @classmethod
+    @keyword("Find Apk Package")
+    def find_apk_package(cls, device_id:Optional[str]=None, package_name: str="") -> bool:
+        """
+        Finds the package name inside of given specified device.
+
+        ``Args:``
+            - ``device_id(str):`` Specified a given adb device id.
+            - ``package_name(str):`` Mention installed package name.(e.g., com.android.calculator2)
+        
+        ``Returns:``
+            - ``bool:`` True if the package is available, otherwise False.
+        
+        Example:
+        | ${stdout} | Find Apk | package_name=com.android.calculator2 |
+        | ${stdout} | Find Apk | device_id=XXRZXXCT81F | com.android.calculator2 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"pm list packages"
+        output, err = cls.execute_adb_shell_command(device_id=device_id,
+                                                    command=cmd,
+                                                    return_stdout=True,
+                                                    return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+        
+        installed_packages = [line.replace("package:", "").strip() for line in output.splitlines()]
+        return package_name in installed_packages
+    
+    @classmethod
+    @keyword("Get Build Product")
+    def get_build_product(cls, device_id:Optional[str]=None) -> str:
+        """
+        Retrieve the build product.
+
+        ``Args:``
+            - ``device_id(str):`` Specified a given adb device id.
+        
+        ``Returns:``
+            - ``Return(str)``: return the build produt.
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+        
+        Example:
+        | ${stdout} | Get Build Product |   # ${stdout}=rpi4   |
+        | ${stdout} | Get Build Product | device_id=XXRZXXCT81F |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"getprop ro.build.product"
+        output, err = cls.execute_adb_shell_command(device_id=device_id,
+                                                    command=cmd,
+                                                    return_stdout=True,
+                                                    return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+        
+        return output
