@@ -27,11 +27,3 @@ jobs:
       - name: Lint core.py with pylint
         run: |
           pylint src/ADBLibrary/core.py --fail-under=8.0
-
-      - name: Build the Python package
-        run: python -m build
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
