@@ -8,7 +8,6 @@ from typing import Optional
 
 # Third party libraries
 from robot.api.deco import keyword
-#from robot.libraries.BuiltIn import BuiltIn
 
 class ADBLibrary:
     """
@@ -48,7 +47,7 @@ class ADBLibrary:
 
         ``Raises:``
             - ``ConnectionError``: If no devices are found.
-        """        
+        """
         try:
             result = subprocess.run(["adb", "devices"],
                                     capture_output=True,
@@ -154,7 +153,7 @@ class ADBLibrary:
 
         if not cls.__is_valid_adb_shell_command(command):
             raise ValueError(f"Invalid ADB command: '{command}'. Must not start with 'adb'.")
-        
+
         full_command = (
             f"adb -s {device_id} shell {command}" if device_id
             else f"adb shell {command}")
@@ -213,10 +212,10 @@ class ADBLibrary:
         | ${stdout}=  Execute Adb Command | device_id=XXRZXXCT81F | command=adb get-state |
         """
         cls._ensure_device_connected(device_id)
-        
+
         if not cls.__is_valid_adb_command(command):
             raise ValueError(f"Invalid ADB command: '{command}'. Must start with 'adb'.")
-        
+
         if device_id:
             if f"-s {device_id}" in command:
                 full_command = command
@@ -382,7 +381,7 @@ class ADBLibrary:
         cls._ensure_device_connected(device_id)
 
         valid_modes = ["normal", "bootloader", "recovery"]
-        
+
         if device_id and not cls.__is_valid_device(device_id):
             raise RuntimeError(f"No device found. Invalid {device_id} device.")
 
@@ -468,16 +467,20 @@ class ADBLibrary:
 
     @classmethod
     @keyword("Start Adb Server")
-    def start_adb_server(cls):
-        """Start the ADB server.
+    def start_adb_server(cls, port:int=5037):
+        """Start the ADB server with specified or default port.
+
+        ``Args``:
+            - ``port:`` Set the adb server port. By default sever port is 5037.
 
         ``Raises:``
             - ``RuntimeError:`` If the ADB server fails to start.
 
         Example:
-        | Start Adb server | # start adb server |
+        | Start Adb Server | # start adb server with default port |
+        | Start Adb Server | port=5038 | # Adb server running into the port 5038. |
         """
-        cmd =  "adb start-server"
+        cmd =  f"adb start-server -p {port}"
 
         return_code = cls.execute_adb_command(command=cmd, return_stdout=False, return_rc=True)
         if return_code != 0:
@@ -485,16 +488,19 @@ class ADBLibrary:
 
     @classmethod
     @keyword("Kill Adb Server")
-    def kill_adb_server(cls):
-        """kill the ADB server.
+    def kill_adb_server(cls, port:int=5037):
+        """kill the ADB server with specified port or default port.
+
+        ``Args``:
+            - ``port:`` Set the adb server port. By default sever port is 5037.
 
         ``Raises:``
             - ``RuntimeError:`` If the ADB server fails to kill.
 
         Example:
-        | Kill Adb server | # kill adb server | 
+        | Kill Adb server | # kill adb server |
         """
-        cmd = "adb kill-server"
+        cmd = f"adb kill-server -p {port}"
         return_code = cls.execute_adb_command(command=cmd, return_stdout=False, return_rc=True)
         if return_code != 0:
             raise RuntimeError(f"Command execution failed: {cmd}")
@@ -631,7 +637,7 @@ class ADBLibrary:
 
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | Close All Adb Connections | # Close all adb related connections |
         """
@@ -651,7 +657,7 @@ class ADBLibrary:
 
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | Close Adb Connection |
         | Close Adb Connection | XXRZXXCT81F |
@@ -750,7 +756,7 @@ class ADBLibrary:
 
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | Set Root Access | # Set root |
         | Set Root Access | device_id=XXRZXXCT81F |
@@ -779,13 +785,13 @@ class ADBLibrary:
 
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | Set Unroot Access | # Set unroot |
         | Set Unroot Access | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
-        
+
         if device_id and not cls.__is_valid_device(device_id):
             raise RuntimeError(f"No device found. Invalid {device_id} device.")
 
@@ -796,7 +802,7 @@ class ADBLibrary:
                                       return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
-    
+
     @classmethod
     @keyword("Install Apk")
     def install_apk(cls, device_id:Optional[str]=None, apk_file: str=""):
@@ -806,7 +812,7 @@ class ADBLibrary:
         ``Args:``
             - ``device_id(str):`` Specified device id.
             - ``apk_file(str):`` Specific apk file in pc
-        
+
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
 
@@ -826,7 +832,7 @@ class ADBLibrary:
                                       return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
-    
+
     @classmethod
     @keyword("Uninstall Apk")
     def uninstall_apk(cls, device_id:Optional[str]=None, apk_package: str=""):
@@ -842,7 +848,7 @@ class ADBLibrary:
             - ``device_id(str)``: The specific device ID to run the command on.
             - ``apk_package(str)``: The package name of the APK to uninstall
                 (e.g., com.android.calculator2).
-        
+
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
 
@@ -860,7 +866,7 @@ class ADBLibrary:
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}"
                                f"{apk_package} package not remove/uninstall")
-    
+
     @classmethod
     @keyword("Find Apk Package")
     def find_apk_package(cls, device_id:Optional[str]=None, package_name: str="") -> bool:
@@ -870,27 +876,27 @@ class ADBLibrary:
         ``Args:``
             - ``device_id(str):`` Specified a given adb device id.
             - ``package_name(str):`` Mention installed package name.(e.g., com.android.calculator2)
-        
+
         ``Returns:``
             - ``bool:`` True if the package is available, otherwise False.
-        
+
         Example:
         | ${stdout} | Find Apk | package_name=com.android.calculator2 |
         | ${stdout} | Find Apk | device_id=XXRZXXCT81F | com.android.calculator2 |
         """
         cls._ensure_device_connected(device_id)
 
-        cmd = f"pm list packages"
+        cmd = "pm list packages"
         output, err = cls.execute_adb_shell_command(device_id=device_id,
                                                     command=cmd,
                                                     return_stdout=True,
                                                     return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
-        
+
         installed_packages = [line.replace("package:", "").strip() for line in output.splitlines()]
         return package_name in installed_packages
-    
+
     @classmethod
     @keyword("Get Build Product")
     def get_build_product(cls, device_id:Optional[str]=None) -> str:
@@ -899,26 +905,26 @@ class ADBLibrary:
 
         ``Args:``
             - ``device_id(str):`` Specified a given adb device id.
-        
+
         ``Returns:``
             - ``Return(str)``: return the build produt.
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | ${stdout} | Get Build Product |   # ${stdout}=rpi4   |
         | ${stdout} | Get Build Product | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
 
-        cmd = f"getprop ro.build.product"
+        cmd = "getprop ro.build.product"
         output, err = cls.execute_adb_shell_command(device_id=device_id,
                                                     command=cmd,
                                                     return_stdout=True,
                                                     return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
-        
+
         return output
 
     @classmethod
@@ -929,24 +935,127 @@ class ADBLibrary:
 
         ``Args:``
             - ``device_id(str):`` Specified a given adb device id.
-        
+
         ``Returns:``
             - ``Return(str)``: return the adb device hardware name.
         ``Raises:``
             - ``RuntimeError:`` command execution failed.
-        
+
         Example:
         | ${stdout} | Get Hardware Name |   # ${stdout}=rpi4   |
         | ${stdout} | Get Hardware Name | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
 
-        cmd = f"getprop ro.hardware"
+        cmd = "getprop ro.hardware"
         output, err = cls.execute_adb_shell_command(device_id=device_id,
                                                     command=cmd,
                                                     return_stdout=True,
                                                     return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
-        
+
         return output
+
+    @classmethod
+    @keyword("Take Screenshot")
+    def take_screenshot(cls, device_id:Optional[str]=None, filename:str='screenshot.png'):
+        """
+        Takes a screenshot from the specified ADB device (or the current device
+        if none is specified) and saves it to the given file path.
+
+        ``Args``:
+            - ``device_id(Optional[str]):`` The ID of the ADB device.
+                If None, uses the current device.
+            - ``filename(str):`` The name (or path) of the file to save the screenshot.
+                Defaults to 'screenshot.png'.
+
+        ``Return:``
+            - ``returns:`` Noe
+
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+            - ``FileNotFoundError:`` File not found or file not exists.
+
+        Example:
+        | Take Screenshot |   # Default device and default filename |
+        | Take Screenshot | device_id=XXRZXXCT81F | # Specified device and default filename |
+        | Take Screenshot | device_id=XXRZXXCT81F | filename='/tmp/screen1.png' |
+
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"adb exec-out screencap -p > {filename}"
+        err = cls.execute_adb_command(device_id=device_id,
+                                      command=cmd,
+                                      return_stdout=False,
+                                      return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"File not exists/found, Check filepath: {filename}")
+
+    @classmethod
+    @keyword("Get Apk Path")
+    def get_apk_path(cls, device_id:Optional[str]=None, package_name: str="") -> str:
+        """
+        Retrieves the full file path of the installed APK on the device.
+
+        ``Args:``
+            - ``device_id(Optional[str]):`` The ID of the ADB device.
+                If None, uses the current device.
+            - ``package_name:`` Specified a installed package name,
+                                (e.g., com.android.calculator2).
+
+        ``Return:``
+            - ``returns:`` Retrives the full file path of the installed APK.
+
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+
+        Example:
+        | ${out} | Get Apk Path | package_name=com.android.calculator2 |
+        | ${out} | Get Apk Path | device_id=XXRZXXCT81F | package_name=com.android.calculator2 |
+
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"pm path {package_name}"
+        output, err = cls.execute_adb_shell_command(device_id=device_id,
+                                            command=cmd,
+                                            return_stdout=True,
+                                            return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Clear App Data")
+    def clear_app_data(cls, device_id:Optional[str]=None, package_name: str=""):
+        """
+        Resets the app by clearing all stored data of the installed APK.
+
+        ``Args:``
+            - ``device_id(Optional[str]):`` The ID of the ADB device.
+                If None, uses the current device.
+            - ``package_name:`` Specified a installed package name,
+                                (e.g., com.android.calculator2).
+
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+
+        Example:
+        | Clear App Data | package_name=com.android.calculator2 |
+        | Clear App Data | device_id=XXRZXXCT81F | package_name=com.android.calculator2 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"pm clear {package_name}"
+        err = cls.execute_adb_shell_command(device_id=device_id,
+                                      command=cmd,
+                                      return_stdout=False,
+                                      return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
