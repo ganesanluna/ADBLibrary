@@ -1059,3 +1059,241 @@ class ADBLibrary:
                                       return_stderr=True)
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
+
+    @classmethod
+    @keyword("Get Package Info")
+    def get_package_info(cls, device_id:Optional[str]=None, package_name: str="") -> str:
+        """
+        Retrieves the details about the installed package on the device.
+
+        ``Args:``
+            - ``device_id(Optional[str]):`` The ID of the ADB device.
+                If None, uses the current device.
+            - ``package_name:`` Specified a installed package name,
+                                (e.g., com.android.calculator2).
+
+        ``Return:``
+            - ``returns:`` Retrives the full file path of the installed APK.
+
+        ``Raises:``
+            - ``RuntimeError:`` command execution failed.
+
+        Example:
+        | ${out} | Get Package Info | package_name=com.android.calculator2 |
+        | ${out} | Get Package Info | device_id=XXRZXXCT81F | package_name=com.android.calculator2 |
+
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"dumpsys package {package_name}"
+        output, err = cls.execute_adb_shell_command(device_id=device_id,
+                                            command=cmd,
+                                            return_stdout=True,
+                                            return_stderr=True)
+        if err:
+            raise RuntimeError(f"Command execution failed, Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Set Keyevent Input")
+    def set_keyevent_input(cls, device_id: Optional[str] = None, value: int = None) -> str:
+        """
+        Sends a keyevent input command to the connected Android device using ADB.
+
+        ``Args:``
+            - ``device_id(Optional[str])``: The ID of the ADB device. If None, the default device is used.
+            - ``value(int):`` The keyevent code to send (e.g., 223 for sleep screen).
+
+        ``Returns:``
+            The standard output from the executed ADB shell command.
+
+        ``Raises:``
+            - RuntimeError: If the ADB shell command fails and returns an error.
+
+        Example:
+            | ${output} | Set Keyevent Input | value=223 |
+            | ${output} | Set Keyevent Input | device_id=XXRZXXCT81F | value=223 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"input keyevent {value}"
+        output, err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=True,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Set Keyevent Input")
+    def set_keyevent_input(cls, device_id: Optional[str] = None, value: int = None) -> str:
+        """
+        Sends a keyevent input command to the connected Android device using ADB.
+
+        ``Args:``
+            - ``device_id (Optional[str]):`` The ID of the ADB device. If None, the default device is used.
+            - ``value (int):`` The keyevent code to send (e.g., 223 for sleep screen).
+
+        ``Returns:``
+            - ``str:`` The standard output from the executed ADB shell command.
+
+        ``Raises:``
+            - ``RuntimeError:`` If the ADB shell command fails and returns an error.
+
+        Example:
+            | ${output} | Set Keyevent Input | value=223 |
+            | ${output} | Set Keyevent Input | device_id=XXRZXXCT81F | value=223 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f"input keyevent {value}"
+        output, err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=True,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Set Screen Size")
+    def set_screen_size(cls, device_id: Optional[str] = None, width: int = None, height: int = None) -> None:
+        """
+        Sets the screen resolution (width x height) on an Android device using ADB.
+
+        -``Args:``
+            - ``device_id (Optional[str]):`` The unique ID of the ADB device. 
+                                            If None, uses the currently connected/default device.
+            - ``width (int):`` The desired screen width in pixels.
+            - ``height (int):`` The desired screen height in pixels.
+        -``Raises:``
+            - ``RuntimeError:`` If the command to set screen size fails or if width/height is not provided.
+            
+        Example:
+            | Set Screen Size | width=1920 | height=1080 |
+            | Set Screen Size | device_id=XXRZXXCT81F | width=1920 | height=1080 |
+        """
+        cls._ensure_device_connected(device_id)
+
+        if width is None or height is None:
+            raise ValueError("Both width and height must be specified.")
+
+        cmd = f"wm size {width}x{height}"
+
+        err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=False,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+
+    @classmethod
+    @keyword("Get Running Processes")
+    def get_running_processes(cls, device_id: Optional[str] = None) -> str:
+        """
+        Retrieves the list of currently running processes on the connected Android device.
+
+        ``Args:``
+            - ``device_id (Optional[str]):`` The unique ID of the ADB device.
+                                    If None, the default connected device is used.
+        ``Returns:``
+            - ``str:`` A string containing the list of running processes.
+        ``Raises:``
+            - ``RuntimeError:`` If the command to retrieve running processes fails.
+        
+        Example:
+            | ${output} | Get Running Processes |
+            | ${output} | Get Running Processes | device_id=XXRZXXCT81F |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = "ps"
+        output, err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=True,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Get All Services")
+    def get_all_services(cls, device_id: Optional[str] = None) -> str:
+        """
+        Retrieves the list of all services available on the connected Android device.
+
+        ``Args:``
+            - ``device_id (Optional[str]):`` The unique ID of the ADB device.
+                                    If None, the default connected device is used.
+
+        ``Returns:``
+            - ``str:`` A string containing the list of all system services.
+
+        ``Raises:``
+            - ``RuntimeError:`` If the command to retrieve services fails.
+        
+        Example:
+            | ${output} | Get All Services |
+            | ${output} | Get All Services | device_id=XXRZXXCT81F |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = "service list"
+        output, err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=True,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+
+        return output
+
+    @classmethod
+    @keyword("Open Default Browser")
+    def open_default_browser(cls, device_id: Optional[str] = None) -> None:
+        """
+        Opens the default web browser on the connected Android device using a key event.
+
+        ``Args:``
+            - ``device_id (Optional[str]):`` The unique ID of the ADB device.
+                                    If None, the default connected device is used.
+
+        ``Raises:``
+            - ``RuntimeError:`` If the command to open the browser fails.
+        
+        Example:
+            | Open Default Browser |
+            | Open Default Browser | device_id=XXRZXXCT81F |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = "input keyevent 64"  # KEYCODE_BROWSER
+        output, err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=False,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
