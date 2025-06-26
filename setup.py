@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="robotframework-adblibrary",
-    version="0.1.1",
+    version="0.1.2",
     author="Ganesan Selvaraj",
     author_email="ganesanluna@yahoo.in",
     description="Robot Framework library for Android ADB interaction",

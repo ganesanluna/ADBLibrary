@@ -104,8 +104,8 @@ ADBLibrary/
 ├── src/
 │   └── ADBLibrary.py         --> Main Robot Framework library
 ├── doc/
-│   └── images/
-│       └── IMAGE1.png        --> Setup diagram
+│   └── ADBLibrary.html       --> Keywords documentation
+│   └── IMAGE1.png            --> Setup diagram
 ├── test/
 |   └── sample.robot          --> Sample robot file.
 ├── requirements.txt          --> Python dependencies
@@ -120,6 +120,7 @@ DOCUMENTATIONS
 Refer to the following file for help with the available functionalities in the ADBLibrary:
 
 [ADBLibrary Keyword Reference](doc/ADBLibrary.html)
+[ADBLibrary Keyword Reference](doc/ADBLibrary.pdf)
 
 -------------------------------------------------------------------------------
 LICENSE

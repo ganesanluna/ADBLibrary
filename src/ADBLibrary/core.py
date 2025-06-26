@@ -11,10 +11,50 @@ from robot.api.deco import keyword
 
 class ADBLibrary:
     """
-    ADBLibrary handles communication with Android devices via ADB(Android Debug Bridge).
+    ADBLibrary is a custom Robot Framework library designed to facilitate automated interactions
+    with Android devices via the Android Debug Bridge (ADB).
 
-    This class provides methods to execute normal and shell commands.
+    This library provides a wide range of functionalities to automate and control Android devices
+    through both generic ADB commands and shell-specific operations. It is especially useful in
+    testing, debugging, device management, and continuous integration environments.
+
+    Features:
+        - Support for multiple connected Android devices.
+        - Execute ADB and ADB shell commands with flexible return options.
+        - Screen control commands (wake, sleep, reboot, screen resolution, screenshots).
+        - Application management (install, uninstall, find package, clear data).
+        - Device information retrieval (serial number, hardware name, build product, version).
+        - File transfers (push/pull) between host and device.
+        - Debug and diagnostic utilities (bug report generation, process/service listing).
+        - Root and unroot device access control.
+        - Text input simulation and browser interaction.
+
+    Attributes:
+        ROBOT_LIBRARY_SCOPE (str): Defines the library scope as 'Global'.
+        _connected_devices (dict): Stores connected device aliases and their corresponding IDs.
+
+    Example usage in Robot Framework:
+        *** Settings ***
+        Library    ADBLibrary
+
+        *** Test Cases ***
+        Wake Up All Screens
+            Wake Up Screens
+
+        Install App
+            Install Apk    apk_file=/home/user/app.apk
+
+        Generate Bug Report
+            ${report_path}=    Generate Bug Report    directory_path=/tmp/reports
+
+    Note:
+        - Commands may require root access depending on the device state or command type.
+        - Device connection validation is performed before each operation.
+
+    For detailed documentation of each keyword, refer to individual method docstrings or
+    generate HTML documentation using `libdoc`.
     """
+
     ROBOT_AUTO_KEYWORDS = False
     ROBOT_LIBRARY_SCOPE = 'Global'
 
@@ -146,8 +186,8 @@ class ADBLibrary:
             - ``RuntimeError``: If the command is not running properly.
 
         Example:
-        | Execute Adb Shell Command | XXRZXXCT81F | input keyevent 224 |
-        | ${out}=  Execute Adb Shell Command | device_id=XXRZXXCT81F | command=input keyevent 224 |
+        | Execute Adb Shell Command | XXRZXXT81F | input keyevent 224 |
+        | ${out}  Execute Adb Shell Command | device_id=XXRZXXT81F | command=input keyevent 224 |
         """
         cls._ensure_device_connected(device_id)
 
@@ -206,10 +246,10 @@ class ADBLibrary:
 
         Example:
         | Execute Adb Command | XXRZXXCT81F | adb shell input keyevent 224 |
-        | ${stdout}=  Execute Adb Command | device_id=XXRZXXCT81F | command=adb devices -l |
-        | ${stdout}=  Execute Adb Command | command=adb get-state | #state of default adb device |
-        | ${stdout}=  Execute Adb Command | command=adb -s XXRZXXCT81F get-state |
-        | ${stdout}=  Execute Adb Command | device_id=XXRZXXCT81F | command=adb get-state |
+        | ${stdout}  Execute Adb Command | device_id=XXRZXXCT81F | command=adb devices -l |
+        | ${stdout}  Execute Adb Command | command=adb get-state | #state of default adb device |
+        | ${stdout}  Execute Adb Command | command=adb -s XXRZXXCT81F get-state |
+        | ${stdout}  Execute Adb Command | device_id=XXRZXXCT81F | command=adb get-state |
         """
         cls._ensure_device_connected(device_id)
 
@@ -255,7 +295,7 @@ class ADBLibrary:
         Wake up all connected devices
 
         ``Raises:``
-            - ``RuntimeError:``If the command is not running properly and no devices are connected.
+            - ``RuntimeError:`` If the command is not running properly and no devices are connected
 
         Example:
         | Wake Up Screens | # wake up all adb screens |
@@ -275,12 +315,13 @@ class ADBLibrary:
                     f"Invalid command on {device_id}: input keyevent 224 is not supported")
 
     @classmethod
+    @keyword("Sleep Screens")
     def sleep_screens(cls):
         """
         Put all connected devices to sleep
 
         ``Raises:``
-            - ``RuntimeError:`` If the command is not running properly and no devices are connected.
+            - ``RuntimeError:`` If the command is not running properly and no devices are connected
 
         Example:
         | Sleep Screens | # sleep all adb screens |
@@ -299,6 +340,7 @@ class ADBLibrary:
                     f"Invalid command on {device_id}: input keyevent 223 is not supported")
 
     @classmethod
+    @keyword("Wake Up Screen")
     def wake_up_screen(cls, device_id: Optional[str] = None):
         """
         Wake up screen on specifieid device
@@ -328,6 +370,7 @@ class ADBLibrary:
                 f"Invalid command on {device_id}: input keyevent 224 is not supported")
 
     @classmethod
+    @keyword("Sleep Screen")
     def sleep_screen(cls, device_id: Optional[str] = None):
         """
         Put particular connected device to sleep
@@ -363,9 +406,9 @@ class ADBLibrary:
         Reboot the ADB device into a specified mode.
 
         ``Args:``
-            - ``device_id(str):` The device ID to reboot.
+            - ``device_id(str):`` The device ID to reboot.
             - ``mode(str):`` Reboot mode - consists of normal, bootloader, recovery.
-                       Default is 'normal'.
+                    Default is 'normal'.
 
         ``Raises:``
             - ``ValueError:`` If an invalid mode is provided.
@@ -684,7 +727,7 @@ class ADBLibrary:
             - ``dest(str):`` Specific path of adb device in adb device.
 
         ``Raises:``
-            - RuntimeError``: If the reconnect command fails
+            - ``RuntimeError``: If the reconnect command fails
 
         Example:
         | Push File | src=file.txt | dest=/storage/downloads/file.txt | # file |
@@ -875,7 +918,8 @@ class ADBLibrary:
 
         ``Args:``
             - ``device_id(str):`` Specified a given adb device id.
-            - ``package_name(str):`` Mention installed package name.(e.g., com.android.calculator2)
+            - ``package_name(str):`` Mention installed package name.
+                                    (e.g., com.android.calculator2)
 
         ``Returns:``
             - ``bool:`` True if the package is available, otherwise False.
@@ -894,7 +938,9 @@ class ADBLibrary:
         if err:
             raise RuntimeError(f"Command execution failed, Error: {err}")
 
-        installed_packages = [line.replace("package:", "").strip() for line in output.splitlines()]
+        installed_packages = [
+            line.replace("package:", "").strip() for line in output.splitlines()
+            ]
         return package_name in installed_packages
 
     @classmethod
@@ -1080,7 +1126,7 @@ class ADBLibrary:
 
         Example:
         | ${out} | Get Package Info | package_name=com.android.calculator2 |
-        | ${out} | Get Package Info | device_id=XXRZXXCT81F | package_name=com.android.calculator2 |
+        | ${out} | Get Package Info | device_id=XXRZXCT81F | package_name=com.android.calculator2 |
 
         """
         cls._ensure_device_connected(device_id)
@@ -1102,7 +1148,8 @@ class ADBLibrary:
         Sends a keyevent input command to the connected Android device using ADB.
 
         ``Args:``
-            - ``device_id(Optional[str])``: The ID of the ADB device. If None, the default device is used.
+            - ``device_id(Optional[str])``: The ID of the ADB device. If None, 
+                                            the default device is used.
             - ``value(int):`` The keyevent code to send (e.g., 223 for sleep screen).
 
         ``Returns:``
@@ -1137,7 +1184,8 @@ class ADBLibrary:
         Sends a keyevent input command to the connected Android device using ADB.
 
         ``Args:``
-            - ``device_id (Optional[str]):`` The ID of the ADB device. If None, the default device is used.
+            - ``device_id (Optional[str]):`` The ID of the ADB device. 
+                                             If None, the default device is used.
             - ``value (int):`` The keyevent code to send (e.g., 223 for sleep screen).
 
         ``Returns:``
@@ -1167,17 +1215,21 @@ class ADBLibrary:
 
     @classmethod
     @keyword("Set Screen Size")
-    def set_screen_size(cls, device_id: Optional[str] = None, width: int = None, height: int = None) -> None:
+    def set_screen_size(cls,
+                        device_id: Optional[str] = None, 
+                        width: int = None, 
+                        height: int = None) -> None:
         """
         Sets the screen resolution (width x height) on an Android device using ADB.
 
-        -``Args:``
+        ``Args:``
             - ``device_id (Optional[str]):`` The unique ID of the ADB device. 
                                             If None, uses the currently connected/default device.
             - ``width (int):`` The desired screen width in pixels.
             - ``height (int):`` The desired screen height in pixels.
-        -``Raises:``
-            - ``RuntimeError:`` If the command to set screen size fails or if width/height is not provided.
+        ``Raises:``
+            - ``RuntimeError:`` If the command to set screen size fails
+                                or if width/height is not provided.
             
         Example:
             | Set Screen Size | width=1920 | height=1080 |
@@ -1282,8 +1334,8 @@ class ADBLibrary:
             - ``RuntimeError:`` If the command to open the browser fails.
         
         Example:
-            | Open Default Browser |
-            | Open Default Browser | device_id=XXRZXXCT81F |
+        | Open Default Browser |
+        | Open Default Browser | device_id=XXRZXXCT81F |
         """
         cls._ensure_device_connected(device_id)
 
@@ -1297,3 +1349,106 @@ class ADBLibrary:
 
         if err:
             raise RuntimeError(f"Command execution failed. Error: {err}")
+
+    @classmethod
+    @keyword("Set Input Text")
+    def set_input_text(cls, device_id: Optional[str] = None, text: str = None):
+        """
+        Sends a text input to the connected Android device via ADB.
+
+        This keyword simulates typing the specified text on the device using the ADB input command.
+
+        ``Args:``
+            - ``device_id (Optional[str]):`` The ID of the connected Android device.
+                If not provided, the default connected device will be used.
+            - ``text (str):`` The text to input into the device.
+
+        ``Raises:``
+            - ``RuntimeError:`` If the ADB command execution fails.
+
+        Example:
+        | Set Input Text | text=Hi Adb |
+        | Set Input Text | device_id=XXRZXXCT81F | text=Hi adb |
+        """
+        cls._ensure_device_connected(device_id)
+
+        cmd = f'input text "{text}"'
+        err = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=False,
+            return_stderr=True
+        )
+
+        if err:
+            raise RuntimeError(f"Command execution failed. Error: {err}")
+        
+    @classmethod
+    @keyword("Generate Bug Report")
+    def generate_bug_report(cls,
+                            device_id: Optional[str] = None,
+                            directory_path: Optional[str] = None):
+        
+        """
+        Generates a bug report from the connected ADB device and saves it to the specified local directory.
+        
+        This method performs the following steps:
+        1. Executes 'adb bugreport' to generate a bug report on the device.
+        2. Locates the generated ZIP file in the device's internal bugreport directory.
+        3. Pulls the ZIP file from the device to the specified local directory.
+        4. Validates the presence of the file locally and returns its path.
+
+        Args:
+            device_id (Optional[str]): The ID of the ADB device. If None, the default connected device is used.
+            directory_path (Optional[str]): The local directory where the bug report ZIP file will be saved.
+
+        Returns:
+            str: Full path to the bug report ZIP file saved on the local system.
+
+        Raises:
+            NotADirectoryError: If the given local directory path does not exist.
+            FileNotFoundError: If the bug report file is not found on the device or not copied successfully.
+            RuntimeError: If any ADB command fails during execution.
+        """
+
+        cls._ensure_device_connected(device_id)
+
+        if not os.path.isdir(directory_path):
+            raise NotADirectoryError(f"{directory_path}: Directory not found")
+
+        cmd = "adb bugreport"
+        cls.execute_adb_command(
+            device_id=device_id,
+            command=cmd,
+            return_stdout=False,
+            return_stderr=False
+        )
+
+        remote_path = "/data/user_de/0/com.android.shell/files/bugreports"
+        file_list = cls.execute_adb_shell_command(
+            device_id=device_id,
+            command=f"ls {remote_path}",
+            return_stdout=True
+        ).splitlines()
+
+        bugreport_file = next((f for f in file_list if f.endswith(".zip")), None)
+
+        if not bugreport_file:
+            raise FileNotFoundError("Bugreport zip file not found on device.")
+
+        remote_file_path = f"{remote_path}/{bugreport_file}"
+        pull_cmd = f"adb pull {remote_file_path} {directory_path}"
+
+        cls.execute_adb_command(
+            device_id=device_id,
+            command=pull_cmd,
+            return_stdout=False,
+            return_stderr=False
+        )
+
+        local_file = os.path.join(directory_path, bugreport_file)
+
+        if not os.path.isfile(local_file):
+            raise FileNotFoundError("Bugreport file not copied to local directory.")
+
+        return local_file
