@@ -120,7 +120,6 @@ DOCUMENTATIONS
 Refer to the following file for help with the available functionalities in the ADBLibrary:
 
 [ADBLibrary Keyword Reference](doc/ADBLibrary.html)
-[ADBLibrary Keyword Reference](doc/ADBLibrary.pdf)
 
 -------------------------------------------------------------------------------
 LICENSE
