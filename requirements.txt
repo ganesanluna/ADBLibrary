@@ -1,1 +1,2 @@
-robotframework
+ipaddress==1.0.23
+robotframework==7.0

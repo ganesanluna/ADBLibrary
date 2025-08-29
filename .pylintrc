@@ -1,6 +1,7 @@
 [MASTER]
 # Allow CamelCase module names (e.g., ADBLibrary)
 module-rgx=(([A-Z][a-z]+)+|[a-z_][a-z0-9_]{2,30})
+max-module-lines = 1200
 
 [MESSAGES CONTROL]
 # Disable warnings you want to ignore completely
@@ -8,7 +9,8 @@ disable=
     C0103,  # Invalid name (e.g., module not in snake_case)
     R0913,  # Too many arguments
     R0904,  # Too many public methods
-    E0633
+    E0633,
+    W0622
 
 [FORMAT]
 # Optional: Customize max line length
@@ -19,7 +21,7 @@ max-line-length=120
 max-args=6
 
 # Increase number of allowed public methods in a class
-max-public-methods=25
+max-public-methods=100
 
 [REPORTS]
 # Turn off pylint report footer

@@ -1,3 +1,3 @@
-from .core import ADBLibrary
+# local or main library
+from .adb_library import ADBLibrary
 
-__all__ = ["ADBLibrary"]

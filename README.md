@@ -1,14 +1,23 @@
 ADBLibrary for Robot Framework
 ==============================
 
-ADBLibrary is a custom Robot Framework library that provides Android Debug Bridge (ADB) functionalities such as:
+**ADBLibrary** is a custom Robot Framework library that provides Android Debug Bridge (ADB) functionalities for automated testing and device control.
 
-- Executing 'adb' commands
-- Running 'adb shell' commands
-- Managing connected Android devices
-- Capturing outputs from Android devices
+It enables seamless interaction with Android devices through ADB commands, making it ideal for client-side testing, device orchestration.
 
-This library is useful for Android client testing and automation scenarios involving ADB.
+---
+
+## Features
+
+- Execute `adb` and `adb shell` commands
+- Manage multiple connected Android devices
+- Switch between USB and TCP/IP connection
+- Install, uninstall, and inspect APKs
+- Capture logs, screenshots, and device metadata
+- Simulate input events and browser interactions
+- Push/pull files between host and device
+- Root/unroot access control
+- Built on a proxy design pattern for scalable multi-device support
 
 -------------------------------------------------------------------------------
 
@@ -39,6 +48,14 @@ Before using this library, ensure the following are installed on your system:
 
    If you want to access the **full set of functionalities** provided by ADBLibrary,
    your Android device must be connected with **root access enabled**.
+
+-------------------------------------------------------------------------------
+## Supported Devices
+
+| Device Type | Supported Features                                      |
+|-------------|----------------------------------------------------------|
+| Rooted      | Full access to all keywords                             |
+| Unrooted    | Limited access: connection, shell commands, metadata queries |
 
 -------------------------------------------------------------------------------
 
@@ -75,25 +92,52 @@ EXAMPLE USAGE IN ROBOT FRAMEWORK
 ================================
 ``` robot
 *** Settings ***
-Library    ADBLibrary
+Library           ADBLibrary
 
 
 *** Variables ***
-${ANDROID_VERSION}   14
+${ADB_DEVICE}           10000000cd0c07a6
+${DEVICE_IP}            192.168.1.103
+${PORT}                 5555
+${ADB_NETWORK_DEVICE}   ${DEVICE_IP}:${PORT}
+${INTERFACE}            wlan0
+${PACKAGE}              com.joeykrim.rootcheck
+${TIMEOUT}              ${5}
+
 
 *** Test Cases ***
-TC001: Get Serial Number
-    ${output}  Execute Adb Command    command=adb get-serialno
-    Log    Android version is ${output}
+TC001 - Basic ADB Operations
+    [Documentation]  Verifies core ADB operations including starting the ADB server, creating a USB connection,
+    ...              executing shell and ADB commands, and disconnecting the device.
+    Start Adb Server
+    Create Connection  type=usb  device_id=${ADB_DEVICE}
+    ${model}  Execute Shell Command  getprop ro.product.model
+    Log To Console  \nModel: ${model}
+    ${version}  Execute Command  adb shell getprop ro.build.version.release
+    Log To Console  \nAndroid Version: ${version}
+    Disconnect Device
 
-TC002: Get Android Version
-    ${output}  Get Android Version
-    Should Be Equal As Integers  ${output}  ${ANDROID_VERSION}
-
-TC003: Wake Up Screen
-    ${stdout}  Get State
-    Should Be Equal  ${stdout}  device
-    Execute Adb Shell Command    command=input keyevent 224
+TC002 - Network Connection and Device Metadata
+    [Documentation]  Verifies network-based ADB connection setup. Includes enabling TCP/IP mode, creating a
+    ...              network connection, retrieving Android version, switching between devices, and fetching
+    ...              device metadata such as build product, hardware name, state, and serial number.
+    Create Connection  type=usb  device_id=${ADB_DEVICE}
+    Enable Tcpip Mode  port=${PORT}
+    Create Connection  type=network  device_ip=${DEVICE_IP}  port=${PORT}
+    ${version}  Get Android Version
+    Log To Console    \nAndroid Version: ${version}
+    Switch Connection  device_id=${ADB_DEVICE}
+    ${connection}  Get Connection
+    Log To Console  \nCurrent Connection: ${connection}
+    ${product}  Get Build Product
+    Log To Console  \nBuild Product: ${product}
+    ${hardware}  Get Hardware Name
+    Log To Console  \nHardware Name: ${hardware}
+    ${state}  Get State
+    Should Be Equal  ${state}  device
+    ${serial_number}  Get Serial Number
+    Should Be Equal  ${serial_number}  ${ADB_DEVICE}
+    Close All Connections
 ```
 -------------------------------------------------------------------------------
 
@@ -101,17 +145,25 @@ PROJECT STRUCTURE
 =================
 ``` sh
 ADBLibrary/
-├── src/
-│   └── ADBLibrary.py         --> Main Robot Framework library
 ├── doc/
-│   └── ADBLibrary.html       --> Keywords documentation
-│   └── IMAGE1.png            --> Setup diagram
-├── test/
-|   └── sample.robot          --> Sample robot file.
-├── requirements.txt          --> Python dependencies
-├── README.md                 --> Project description
-├── LICENSE.txt               --> Apache License 2.0
-├── setup.py                  --> Python packageing file
+│   ├── ADBLibrary.html       # Auto-generated keyword documentation (via libdoc)
+│   └── IMAGE1.png            # Optional setup or architecture diagram
+├── LICENSE.txt               # Apache License 2.0
+├── README.md                 # Project overview and usage instructions
+├── requirements.txt          # Python dependencies
+├── setup.py                  # Packaging and distribution configuration
+├── src/
+│   ├── ADBLibrary/
+│   │   ├── adb_library.py    # Main Robot Framework library class (with @library decorator)
+│   │   └── __init__.py       # Entry point for libdoc and version declaration
+│   └── core/
+│       ├── adb_connection.py # Low-level ADB connection handling
+│       ├── adb_interface.py  # Interface definitions and command abstractions
+│       ├── adb_proxy.py      # Proxy design pattern for multi-device orchestration
+│       └── __init__.py       # Core module initializer
+└── test/
+    └── test.robot            # Sample Robot Framework test suite using ADBLibrary
+
 ```
 -------------------------------------------------------------------------------
 DOCUMENTATIONS
@@ -121,6 +173,10 @@ Refer to the following file for help with the available functionalities in the A
 
 [ADBLibrary Keyword Reference](doc/ADBLibrary.html)
 
+You Can regenerate this using:
+``` sh
+$ libdoc ADBLibrary ADBLibrary.html
+```
 -------------------------------------------------------------------------------
 LICENSE
 =======
@@ -133,4 +189,9 @@ https://www.apache.org/licenses/LICENSE-2.0
 CONTRIBUTIONS
 =============
 
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Contributions are welcome! Feel free to:
+- Submit pull requests
+- Open issues
+- Suggest new keywords or enhancements
+
+Let’s build a powerful ADB automation ecosystem together.
